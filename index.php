@@ -2,9 +2,8 @@
 $host = 'localhost';
 $db = 'digital_library';
 $user = 'lector';
-$pass = 'lector123'; // Pon aquí tu contraseña si la tienes
+$pass = 'lector123'; 
 
-// Conexión a la base de datos
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
