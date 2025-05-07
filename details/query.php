@@ -9,12 +9,10 @@ function obtenerDetallesLibro($pdo, $book_id) {
         b.year_publication,
         ROUND(AVG(v.score), 2) AS average_score,
         COUNT(v.valoration_id) AS total_valorations,
-        l.status AS loan_status,
+        (SELECT COUNT(*) FROM BookLoan bl2 JOIN Loan l2 ON bl2.loan_id = l2.loan_id WHERE bl2.book_id = b.book_id AND l2.status = 'active') > 0 AS is_on_loan,
         b.cover
     FROM Book b
     LEFT JOIN Valoration v ON b.book_id = v.book_id
-    LEFT JOIN BookLoan bl ON b.book_id = bl.book_id
-    LEFT JOIN Loan l ON bl.loan_id = l.loan_id AND l.status = 'active'
     WHERE b.book_id = :book_id
     GROUP BY b.book_id";
 

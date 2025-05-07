@@ -60,6 +60,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           }
       }
   }
+  $book = obtenerDetallesLibro($pdo, $book_id);
+  $ratings = obtenerValoraciones($pdo, $book_id);
 }
 ?>
 
@@ -89,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <p><strong>Year of publication:</strong> <?= date('Y', strtotime($book['year_publication'])) ?></p>
       <p><strong>Average rating:</strong> <?= $book['average_score'] ?? 'N/A' ?> (<?= $book['total_valorations'] ?> rating/s)</p>
     </div>
-    <?php if ($book['loan_status']): ?>
+    <?php if ($book['is_on_loan']): ?>
        <div class="loan-status"><i class="fa fa-times-circle" style="color:#dc3545;margin-right:6px;"></i>Currently on loan</div>
     <?php else: ?>
         <button type="button" class="loan-btn" onclick="openLoanModal()">Make a loan</button>
