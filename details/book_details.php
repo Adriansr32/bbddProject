@@ -31,26 +31,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $date_loan = $_POST['date_loan'];
   $date_return = $_POST['date_return'];
 
+  $notification = null;
+  $notification_type = null;
+
   if ($date_loan > $date_return) {
-      echo "<p style='color:red'>The return date cannot be earlier than the loan date.</p>";
+      $notification = "Return date cannot be earlier than loan date.";
+      $notification_type = "error";
   } else {
       $stmt = $pdo->prepare("SELECT COUNT(*) FROM Loan l JOIN BookLoan bl ON l.loan_id = bl.loan_id WHERE bl.book_id = ? AND l.status = 'active'");
-  if ($stmt->execute([$book_id]) && $stmt->fetchColumn() > 0) {
-      echo "<p style='color:red'>This book is already on loan.</p>";
-  } else {
-      $stmt = $pdo->prepare("INSERT INTO Loan (user_id, date_loan, date_return, status) VALUES (?, ?, ?, 'active')");
-      if ($stmt->execute([$user_id, $date_loan, $date_return])) {
-          $loan_id = $pdo->lastInsertId();
-          $stmt = $pdo->prepare("INSERT INTO BookLoan (loan_id, book_id) VALUES (?, ?)");
-          if ($stmt->execute([$loan_id, $book_id])) {
-              echo "<p style='color:green'>Loan registered successfully.</p>";
-          } else {
-              echo "<p style='color:red'>Error registering the loan.</p>";
-          }
+      if ($stmt->execute([$book_id]) && $stmt->fetchColumn() > 0) {
+          $notification = "This book is already on loan.";
+          $notification_type = "error";
       } else {
-          echo "<p style='color:red'>Error registering the loan.</p>";
+          $stmt = $pdo->prepare("INSERT INTO Loan (user_id, date_loan, date_return, status) VALUES (?, ?, ?, 'active')");
+          if ($stmt->execute([$user_id, $date_loan, $date_return])) {
+              $loan_id = $pdo->lastInsertId();
+              $stmt = $pdo->prepare("INSERT INTO BookLoan (loan_id, book_id) VALUES (?, ?)");
+              if ($stmt->execute([$loan_id, $book_id])) {
+                  $notification = "Loan registered successfully.";
+                  $notification_type = "success";
+              } else {
+                  $notification = "Error registering the loan.";
+                  $notification_type = "error";
+              }
+          } else {
+              $notification = "Error registering the loan.";
+              $notification_type = "error";
+          }
       }
-  }
   }
 }
 ?>
@@ -61,6 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <?php if (!empty($book['cover'])): ?>
   <link rel="icon" type="image/jpeg" href="../img/DL.png">
 <?php endif; ?>
@@ -81,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <p><strong>Average rating:</strong> <?= $book['average_score'] ?? 'N/A' ?> (<?= $book['total_valorations'] ?> rating/s)</p>
     </div>
     <?php if ($book['loan_status']): ?>
-       <div class="loan-status">Currently on loan</div>
+       <div class="loan-status"><i class="fa fa-times-circle" style="color:#dc3545;margin-right:6px;"></i>Currently on loan</div>
     <?php else: ?>
         <button type="button" class="loan-btn" onclick="openLoanModal()">Make a loan</button>
     <?php endif; ?>
@@ -121,17 +130,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
       </div>
       <script>
-        function openLoanModal() {
-          document.getElementById('loanModal').style.display = 'block';
-        }
-        function closeLoanModal() { 
-          document.getElementById('loanModal').style.display = 'none';
-          document.getElementById('loanResult').innerHTML = '';
-        }
+        var notification = <?php echo isset($notification) ? '"' . addslashes($notification) . '"' : 'null'; ?>;
+        var notificationType = <?php echo isset($notification_type) ? '"' . $notification_type . '"' : 'null'; ?>;
       </script>
-      <style>
-
-      </style>
+      <div id="notification-container" style="position:fixed;top:30px;right:30px;z-index:9999;display:none;"></div>
+      <script src="script.js"></script>
     <button class="back-btn" onclick="window.location.href='../index.php'">Back to list</button>
   </div>
 
