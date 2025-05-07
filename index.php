@@ -28,6 +28,7 @@ try {
 <head>
   <meta charset="UTF-8">
   <title>Digital library</title>
+  <link rel="icon" type="image/jpeg" href="img/DL.png">
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
